@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mario Control Center</title>
+  <link rel="stylesheet" href="vendor/FullScreenMario/Fonts/stylesheet.css">
+  <link rel="stylesheet" href="launcher.css">
+</head>
+<body>
+  <div class="page-shell">
+    <aside class="control-panel">
+      <div class="hero-card">
+        <p class="eyebrow">FullScreenMario + Control Center</p>
+        <h1>Thay source cũ bằng engine Mario gốc và mở rộng tuỳ biến mạnh hơn.</h1>
+        <p class="hero-copy">
+          Chọn map, bật Luigi, chỉnh tốc độ, số mạng, thời gian, zoom khung game, power-up nhanh,
+          teleport tức thì, mở level editor và lưu preset cá nhân.
+        </p>
+        <div class="hero-actions">
+          <button class="primary" id="apply-config">Áp dụng cấu hình</button>
+          <button class="secondary" id="reset-config">Reset launcher</button>
+        </div>
+      </div>
+
+      <section class="panel-block">
+        <div class="section-heading">
+          <h2>Khởi tạo map</h2>
+          <span id="game-status">Đang kết nối game...</span>
+        </div>
+
+        <label class="field">
+          <span>Chế độ</span>
+          <select id="map-mode">
+            <option value="world">World cố định</option>
+            <option value="random">Random biome</option>
+          </select>
+        </label>
+
+        <div class="grid two">
+          <label class="field">
+            <span>World</span>
+            <select id="world">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Level</span>
+            <select id="level">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Random biome</span>
+          <select id="random-biome">
+            <option value="Overworld">Overworld</option>
+            <option value="Underworld">Underworld</option>
+            <option value="Underwater">Underwater</option>
+            <option value="Sky">Sky</option>
+            <option value="Castle">Castle</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="panel-block">
+        <div class="section-heading">
+          <h2>Tuning</h2>
+          <button class="ghost" id="copy-link">Copy link cấu hình</button>
+        </div>
+
+        <div class="grid two">
+          <label class="field">
+            <span>Tốc độ</span>
+            <input id="speed" type="range" min="1" max="6" step="1" value="1">
+            <strong id="speed-value">1x</strong>
+          </label>
+
+          <label class="field">
+            <span>Zoom</span>
+            <input id="zoom" type="range" min="0.75" max="1.4" step="0.05" value="1">
+            <strong id="zoom-value">100%</strong>
+          </label>
+        </div>
+
+        <div class="grid two">
+          <label class="field">
+            <span>Số mạng</span>
+            <input id="lives" type="number" min="1" max="99" step="1" value="3">
+          </label>
+
+          <label class="field">
+            <span>Thời gian</span>
+            <input id="time" type="number" min="0" max="999" step="10" value="350">
+          </label>
+        </div>
+
+        <div class="toggle-grid">
+          <label class="toggle-chip">
+            <input id="toggle-luigi" type="checkbox">
+            <span>Luigi</span>
+          </label>
+          <label class="toggle-chip">
+            <input id="toggle-fast" type="checkbox">
+            <span>FastFWD</span>
+          </label>
+          <label class="toggle-chip">
+            <input id="toggle-mute" type="checkbox">
+            <span>Mute</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel-block">
+        <div class="section-heading">
+          <h2>Can thiệp nhanh</h2>
+          <button class="ghost" id="open-editor">Mở editor</button>
+        </div>
+
+        <div class="action-grid">
+          <button class="action" data-action="powerup">Mushroom</button>
+          <button class="action" data-action="star">Star</button>
+          <button class="action" data-action="life">+1 Life</button>
+          <button class="action" data-action="random">Map random</button>
+        </div>
+
+        <div class="grid two">
+          <label class="field">
+            <span>Teleport World</span>
+            <select id="teleport-world">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Teleport Level</span>
+            <select id="teleport-level">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+        </div>
+
+        <button class="primary block" id="teleport">Chuyển map ngay</button>
+      </section>
+
+      <section class="panel-block">
+        <div class="section-heading">
+          <h2>Preset</h2>
+          <button class="ghost" id="export-preset">Xuất JSON</button>
+        </div>
+
+        <div class="grid two">
+          <label class="field">
+            <span>Tên preset</span>
+            <input id="preset-name" type="text" placeholder="vd. Speedrun 1-1">
+          </label>
+
+          <label class="field">
+            <span>Preset đã lưu</span>
+            <select id="preset-list">
+              <option value="">Chưa có preset</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="hero-actions">
+          <button class="secondary" id="save-preset">Lưu preset</button>
+          <button class="secondary" id="load-preset">Nạp preset</button>
+          <button class="secondary" id="delete-preset">Xoá preset</button>
+        </div>
+      </section>
+
+      <section class="panel-block">
+        <div class="section-heading">
+          <h2>Console local</h2>
+          <span>Cho chỉnh sâu bằng API gốc</span>
+        </div>
+
+        <label class="field">
+          <span>Lệnh chạy trong game iframe</span>
+          <textarea id="custom-command" rows="4" placeholder="setMap(1, 1); gainLife(5); data.time.amount = Infinity;"></textarea>
+        </label>
+        <button class="primary block" id="run-command">Chạy lệnh</button>
+      </section>
+    </aside>
+
+    <main class="game-stage">
+      <div class="stage-topbar">
+        <div>
+          <p class="eyebrow">Live Preview</p>
+          <h2>FullScreenMario engine</h2>
+        </div>
+        <div class="hud-pills">
+          <span id="active-map-pill">Map: 1-1</span>
+          <span id="preset-pill">Preset: mặc định</span>
+        </div>
+      </div>
+
+      <div class="game-frame-shell">
+        <iframe
+          id="game-frame"
+          src="vendor/FullScreenMario/mario.html"
+          title="FullScreenMario"
+          allow="autoplay"
+        ></iframe>
+      </div>
+
+      <section class="tips">
+        <p><strong>Phím mặc định:</strong> mũi tên để di chuyển, Shift để chạy, Space/Up để nhảy.</p>
+        <p><strong>Mẹo:</strong> launcher sẽ đồng bộ cấu hình vào URL và `localStorage`, nên có thể chia sẻ preset hoặc reload mà vẫn giữ state.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="launcher.js"></script>
+</body>
+</html>

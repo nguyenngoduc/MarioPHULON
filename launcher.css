@@ -1,0 +1,301 @@
+:root {
+  --bg-1: #0e1a2f;
+  --bg-2: #163154;
+  --panel: rgba(11, 19, 37, 0.84);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text: #f8f4dc;
+  --muted: #c7d2eb;
+  --accent: #ffb703;
+  --accent-2: #fb8500;
+  --success: #7ae582;
+  --danger: #ff5d73;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Press Start 2P", "Courier New", monospace;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 183, 3, 0.22), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(58, 134, 255, 0.32), transparent 22%),
+    linear-gradient(140deg, var(--bg-1), var(--bg-2));
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.page-shell {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.control-panel,
+.game-stage {
+  position: relative;
+  z-index: 1;
+}
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hero-card,
+.panel-block,
+.game-stage,
+.tips {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.hero-card,
+.panel-block,
+.game-stage {
+  padding: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.45;
+}
+
+h1 {
+  font-size: 20px;
+}
+
+h2 {
+  font-size: 15px;
+}
+
+.hero-copy,
+.tips p,
+#game-status,
+.section-heading span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.hero-actions,
+.grid,
+.toggle-grid,
+.action-grid,
+.hud-pills {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.toggle-grid,
+.action-grid,
+.hud-pills {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.field span {
+  color: var(--accent);
+}
+
+input,
+select,
+textarea,
+button {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+button {
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #241300;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.secondary,
+.ghost,
+.action,
+.toggle-chip {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.block {
+  width: 100%;
+}
+
+.section-heading,
+.stage-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.toggle-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+}
+
+.toggle-chip input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--success);
+}
+
+.game-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.hud-pills span {
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: center;
+  font-size: 10px;
+}
+
+.game-frame-shell {
+  position: relative;
+  overflow: auto;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(114, 214, 255, 0.12), rgba(10, 18, 35, 0.4)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  min-height: 720px;
+  padding: 20px;
+}
+
+#game-frame {
+  width: 100%;
+  min-height: 680px;
+  border: 0;
+  border-radius: 18px;
+  background: #000;
+  transform-origin: top center;
+}
+
+.tips {
+  padding: 16px 18px;
+}
+
+.tips p {
+  margin: 0;
+}
+
+.tips p + p {
+  margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+  .page-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .game-frame-shell {
+    min-height: 620px;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    padding: 14px;
+  }
+
+  .hero-actions,
+  .grid.two,
+  .toggle-grid,
+  .action-grid,
+  .hud-pills {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 16px;
+  }
+
+  .hero-card,
+  .panel-block,
+  .game-stage {
+    padding: 16px;
+    border-radius: 18px;
+  }
+}
