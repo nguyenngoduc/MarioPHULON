@@ -1116,13 +1116,11 @@ function World11(map) {
       greeter += "background-repeat: no-repeat;";
       greeter += "background-position: 7px 7px, 336px 7px, 7px 168px, 336px 168px";
       greeter += "'>";
-      greeter += "  <p style='text-align:left;padding:7px 0 11px 11px;color:#ffcccc;font-family: Super Plumber Bros;font-size:77px;text-shadow:3px 8px black'>";
-      greeter += "    <span style='font-size:84px'>super</span>";
-      greeter += "    <br><br>"; // To do: make this not so font dependant
-      greeter += "    <span style='font-size:81px;line-height:96px'>MARIO BROS.</span>";
-      greeter += "  </p>";
+      greeter += "  <div style='padding:14px 12px 6px;text-align:center;'>";
+      greeter += "    <img src='../../New%20SUPER%20PHULON%20BROS.png' alt='New Super PHULON Bros.' style='max-width:100%;height:auto;max-height:132px;image-rendering:pixelated;filter:drop-shadow(3px 6px 0 black);'>";
+      greeter += "  </div>";
       greeter += "</div>";
-      greeter += "<div id='boo' style='text-align:right;color:#ffcccc;margin-top:-7px;width:350px;height:35px;'>&copy;1985 NINTENDO</div>";
+      greeter += "<div id='boo' style='text-align:right;color:#ffcccc;margin-top:-7px;width:350px;height:35px;'>&copy; 1975 SIUUUTENDO</div>";
       greeter += "<p id='explanation' style='text-align:center;<!--/*text-shadow:2px 2px 1px black;*/-->margin-left:7px;'>";
       greeter += "  Move: Arrows/WASD";
       greeter += "  <br>";
