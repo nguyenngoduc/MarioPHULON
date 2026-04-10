@@ -3,18 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mario Control Center</title>
+  <title>New Super PHULON Bros.</title>
   <link rel="stylesheet" href="vendor/FullScreenMario/Fonts/stylesheet.css">
   <link rel="stylesheet" href="launcher.css">
 </head>
 <body>
   <div class="page-shell">
+    <main class="game-stage">
+      <div class="game-titlebar">
+        <h2>New Super PHULON Bros.</h2>
+      </div>
+
+      <div class="game-frame-shell">
+        <div class="play-overlay" id="play-overlay">
+          <p class="eyebrow">Ready To Run</p>
+          <h3>Bấm Play để tải game, bật nhạc và khóa tập trung vào khung chơi.</h3>
+          <button class="primary play-button" id="play-game">Play</button>
+          <p class="play-note">Game chỉ bắt đầu tải khi bạn bấm Play. Sau đó click vào game để lấy focus, và bấm ESC để thoát khóa.</p>
+        </div>
+        <iframe
+          id="game-frame"
+          data-src="vendor/FullScreenMario/mario.html"
+          title="FullScreenMario"
+          allow="autoplay"
+          tabindex="0"
+        ></iframe>
+      </div>
+
+      <div class="stage-topbar">
+        <div>
+          <p class="eyebrow">Live Preview</p>
+          <h2>FullScreenMario engine</h2>
+        </div>
+        <div class="hud-pills">
+          <span id="active-map-pill">Map: 1-1</span>
+          <span id="preset-pill">Preset: mặc định</span>
+        </div>
+      </div>
+
+      <section class="tips">
+        <p><strong>Phím mặc định:</strong> mũi tên để di chuyển, Shift để chạy, Space/Up để nhảy.</p>
+        <p><strong>Mẹo:</strong> launcher sẽ đồng bộ cấu hình vào URL và `localStorage`, nên có thể chia sẻ preset hoặc reload mà vẫn giữ state.</p>
+      </section>
+    </main>
+
     <aside class="control-panel">
       <div class="hero-card">
         <p class="eyebrow">FullScreenMario + Control Center</p>
         <h1>Thay source cũ bằng engine Mario gốc và mở rộng tuỳ biến mạnh hơn.</h1>
         <p class="hero-copy">
-          Chọn map, bật Luigi, chỉnh tốc độ, số mạng, thời gian, zoom khung game, power-up nhanh,
+          Chọn map, chỉnh tốc độ, số mạng, thời gian, zoom khung game, power-up nhanh,
           teleport tức thì, mở level editor và lưu preset cá nhân.
         </p>
         <div class="hero-actions">
@@ -26,7 +64,7 @@
       <section class="panel-block">
         <div class="section-heading">
           <h2>Khởi tạo map</h2>
-          <span id="game-status">Đang kết nối game...</span>
+          <span id="game-status">Sẵn sàng tải game</span>
         </div>
 
         <label class="field">
@@ -90,8 +128,8 @@
 
           <label class="field">
             <span>Zoom</span>
-            <input id="zoom" type="range" min="0.75" max="1.4" step="0.05" value="1">
-            <strong id="zoom-value">100%</strong>
+            <input id="zoom" type="range" min="0.75" max="1.4" step="0.05" value="0.9">
+            <strong id="zoom-value">90%</strong>
           </label>
         </div>
 
@@ -108,10 +146,6 @@
         </div>
 
         <div class="toggle-grid">
-          <label class="toggle-chip">
-            <input id="toggle-luigi" type="checkbox">
-            <span>Luigi</span>
-          </label>
           <label class="toggle-chip">
             <input id="toggle-fast" type="checkbox">
             <span>FastFWD</span>
@@ -205,33 +239,6 @@
         <button class="primary block" id="run-command">Chạy lệnh</button>
       </section>
     </aside>
-
-    <main class="game-stage">
-      <div class="stage-topbar">
-        <div>
-          <p class="eyebrow">Live Preview</p>
-          <h2>FullScreenMario engine</h2>
-        </div>
-        <div class="hud-pills">
-          <span id="active-map-pill">Map: 1-1</span>
-          <span id="preset-pill">Preset: mặc định</span>
-        </div>
-      </div>
-
-      <div class="game-frame-shell">
-        <iframe
-          id="game-frame"
-          src="vendor/FullScreenMario/mario.html"
-          title="FullScreenMario"
-          allow="autoplay"
-        ></iframe>
-      </div>
-
-      <section class="tips">
-        <p><strong>Phím mặc định:</strong> mũi tên để di chuyển, Shift để chạy, Space/Up để nhảy.</p>
-        <p><strong>Mẹo:</strong> launcher sẽ đồng bộ cấu hình vào URL và `localStorage`, nên có thể chia sẻ preset hoặc reload mà vẫn giữ state.</p>
-      </section>
-    </main>
   </div>
 
   <script src="launcher.js"></script>

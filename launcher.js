@@ -9,10 +9,9 @@ const defaults = {
   level: "1",
   randomBiome: "Overworld",
   speed: 1,
-  zoom: 1,
+  zoom: 0.9,
   lives: 3,
   time: 350,
-  luigi: false,
   fast: false,
   mute: false,
   presetName: "",
@@ -29,11 +28,13 @@ const elements = {
   speedValue: document.getElementById("speed-value"),
   zoom: document.getElementById("zoom"),
   zoomValue: document.getElementById("zoom-value"),
+  frameShell: document.querySelector(".game-frame-shell"),
   lives: document.getElementById("lives"),
   time: document.getElementById("time"),
-  luigi: document.getElementById("toggle-luigi"),
   fast: document.getElementById("toggle-fast"),
   mute: document.getElementById("toggle-mute"),
+  playOverlay: document.getElementById("play-overlay"),
+  playGame: document.getElementById("play-game"),
   activeMapPill: document.getElementById("active-map-pill"),
   presetPill: document.getElementById("preset-pill"),
   presetName: document.getElementById("preset-name"),
@@ -43,9 +44,16 @@ const elements = {
 
 let gameWindow = null;
 let gameReady = false;
+let gameStarted = false;
+let gameLocked = false;
+let gameLoading = false;
+let pendingStart = false;
 let syncTimer = null;
 
 function boot() {
+  window.launcherFocusGame = lockGameFrame;
+  window.unlockGameFrameFromChild = unlockGameFrame;
+  window.isGameInputLocked = () => gameLocked;
   bindEvents();
   hydrateFromStoredConfig();
   renderPresetList();
@@ -53,7 +61,6 @@ function boot() {
   applyZoom();
   updateModeState();
   updateURL();
-  waitForGame();
 }
 
 function bindEvents() {
@@ -67,6 +74,9 @@ function bindEvents() {
   document.getElementById("load-preset").addEventListener("click", loadPreset);
   document.getElementById("delete-preset").addEventListener("click", deletePreset);
   document.getElementById("export-preset").addEventListener("click", exportPreset);
+  elements.playGame.addEventListener("click", startGameExperience);
+  elements.frameShell.addEventListener("click", handleFrameShellClick);
+  window.addEventListener("keydown", handleGlobalKeydown);
 
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => quickAction(button.dataset.action));
@@ -81,7 +91,6 @@ function bindEvents() {
     elements.zoom,
     elements.lives,
     elements.time,
-    elements.luigi,
     elements.fast,
     elements.mute,
     elements.presetName,
@@ -113,6 +122,7 @@ function updateModeState() {
 }
 
 function waitForGame() {
+  if (!elements.frame.getAttribute("src")) return;
   gameWindow = elements.frame.contentWindow;
   elements.status.textContent = "Đang nạp engine...";
 
@@ -123,13 +133,25 @@ function waitForGame() {
       window.clearInterval(interval);
       gameWindow = game;
       applyCustomPlayerSkin(game);
+      attachEmbeddedFullscreenBridge(game);
       gameReady = true;
+      gameLoading = false;
       elements.status.textContent = "Game đã sẵn sàng";
+      elements.playGame.disabled = false;
+      elements.playGame.textContent = "Play";
+      if (pendingStart) {
+        pendingStart = false;
+        startGameExperience();
+      }
       return;
     }
 
     if (Date.now() - start > 15000) {
       window.clearInterval(interval);
+      gameLoading = false;
+      pendingStart = false;
+      elements.playGame.disabled = false;
+      elements.playGame.textContent = "Play";
       elements.status.textContent = "Game nạp chậm, thử reload trang";
     }
   }, 250);
@@ -159,7 +181,6 @@ function currentConfig() {
     zoom: Number(elements.zoom.value),
     lives: Number(elements.lives.value),
     time: Number(elements.time.value),
-    luigi: elements.luigi.checked,
     fast: elements.fast.checked,
     mute: elements.mute.checked,
     presetName: elements.presetName.value.trim(),
@@ -175,7 +196,6 @@ function applyForm(config) {
   elements.zoom.value = String(config.zoom);
   elements.lives.value = String(config.lives);
   elements.time.value = String(config.time);
-  elements.luigi.checked = Boolean(config.luigi);
   elements.fast.checked = Boolean(config.fast);
   elements.mute.checked = Boolean(config.mute);
   elements.presetName.value = config.presetName || "";
@@ -185,7 +205,14 @@ function applyForm(config) {
 }
 
 function applyCurrentConfig() {
-  syncConfigToGame();
+  persistDraft(currentConfig());
+  updateURL();
+  updateDisplayPills();
+  if (gameReady) {
+    syncConfigToGame();
+  } else {
+    elements.status.textContent = "Đã lưu cấu hình, game sẽ áp dụng khi bấm Play";
+  }
 }
 
 function syncConfigToGame() {
@@ -215,7 +242,6 @@ function syncConfigToGame() {
         game.setLives(config.lives);
       }
 
-      syncBooleanToggle(game, "luigi", config.luigi, "toggleLuigi");
       syncBooleanToggle(game, "fastforwarding", config.fast, "toggleFastFWD");
 
       const muted = game.localStorage && game.localStorage.muted === "true";
@@ -224,6 +250,9 @@ function syncConfigToGame() {
       }
 
       elements.status.textContent = "Đã đồng bộ launcher với game";
+      if (gameStarted) {
+        startThemeAudio(game, config);
+      }
     }, 450);
   });
 }
@@ -272,7 +301,95 @@ function applyZoom() {
   const zoom = Number(elements.zoom.value);
   elements.frame.style.transform = `scale(${zoom})`;
   elements.frame.style.width = `${100 / zoom}%`;
-  elements.frame.style.height = `${680 / zoom}px`;
+  elements.frame.style.height = `${560 / zoom}px`;
+}
+
+function handleFrameShellClick(event) {
+  if (elements.playOverlay && elements.playOverlay.contains(event.target)) return;
+  lockGameFrame();
+}
+
+function startGameExperience() {
+  if (gameReady) {
+    gameStarted = true;
+    elements.playOverlay.classList.add("hidden");
+    lockGameFrame();
+    syncConfigToGame();
+    withGame((game) => {
+      focusGameFrame();
+      startThemeAudio(game, currentConfig());
+    });
+    return;
+  }
+
+  if (gameLoading) {
+    elements.status.textContent = "Game đang tải...";
+    return;
+  }
+
+  pendingStart = true;
+  gameLoading = true;
+  elements.status.textContent = "Đang tải game...";
+  elements.playGame.disabled = true;
+  elements.playGame.textContent = "Loading...";
+  elements.frame.setAttribute("src", elements.frame.dataset.src);
+  waitForGame();
+}
+
+function focusGameFrame() {
+  elements.frameShell.classList.add("active");
+  if (elements.frame && typeof elements.frame.focus === "function") {
+    elements.frame.focus();
+  }
+  if (gameWindow && typeof gameWindow.focus === "function") {
+    gameWindow.focus();
+  }
+}
+
+function lockGameFrame() {
+  gameLocked = true;
+  focusGameFrame();
+}
+
+function unlockGameFrame() {
+  gameLocked = false;
+  elements.frameShell.classList.remove("active");
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+}
+
+function handleGlobalKeydown(event) {
+  if (!gameLocked) return;
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    unlockGameFrame();
+    elements.status.textContent = "Đã thoát khóa khung game";
+    return;
+  }
+
+  const typingTarget = event.target && ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(event.target.tagName);
+  if (typingTarget) {
+    return;
+  }
+
+  const isFrameFocused =
+    document.activeElement === elements.frame ||
+    document.activeElement === elements.frameShell;
+
+  if (!isFrameFocused) {
+    focusGameFrame();
+  }
+}
+
+function startThemeAudio(game, config) {
+  if (!game || !game.AudioPlayer || config.mute) return;
+  if (typeof game.AudioPlayer.playTheme === "function") {
+    game.AudioPlayer.playTheme();
+  } else if (typeof game.AudioPlayer.resumeTheme === "function") {
+    game.AudioPlayer.resumeTheme();
+  }
 }
 
 function applyTargetMap(game, targetMap) {
@@ -340,6 +457,59 @@ function shouldDrawCustomThing(me, playerImage, coinImage) {
   );
 }
 
+function attachEmbeddedFullscreenBridge(game) {
+  if (!game.document || game.__focusBridgeAttached) return;
+
+  game.document.addEventListener("pointerdown", () => {
+    if (game.parent && typeof game.parent.launcherFocusGame === "function") {
+      game.parent.launcherFocusGame();
+    }
+  });
+
+  game.document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      if (game.parent && typeof game.parent.unlockGameFrameFromChild === "function") {
+        game.parent.unlockGameFrameFromChild();
+      }
+      return;
+    }
+
+    if (!game.parent || typeof game.parent.isGameInputLocked !== "function" || !game.parent.isGameInputLocked()) {
+      return;
+    }
+
+    const blockedKeys = new Set([
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      " ",
+      "Spacebar",
+      "PageUp",
+      "PageDown",
+      "Home",
+      "End",
+    ]);
+
+    if (blockedKeys.has(event.key)) {
+      event.preventDefault();
+    }
+  }, true);
+
+  game.addEventListener("blur", () => {
+    if (game.parent && typeof game.parent.isGameInputLocked === "function" && game.parent.isGameInputLocked()) {
+      setTimeout(() => {
+        if (game.parent && typeof game.parent.launcherFocusGame === "function") {
+          game.parent.launcherFocusGame();
+        }
+      }, 0);
+    }
+  });
+
+  game.__focusBridgeAttached = true;
+}
+
 function persistDraft(config = currentConfig()) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
@@ -377,7 +547,6 @@ function readConfigFromURL() {
     zoom: Number(params.get("zoom") || defaults.zoom),
     lives: Number(params.get("lives") || defaults.lives),
     time: Number(params.get("time") || defaults.time),
-    luigi: params.get("luigi") === "1",
     fast: params.get("fast") === "1",
     mute: params.get("mute") === "1",
     presetName: params.get("preset") || "",
@@ -394,7 +563,6 @@ function updateURL(config = currentConfig()) {
   params.set("zoom", String(config.zoom));
   params.set("lives", String(config.lives));
   params.set("time", String(config.time));
-  params.set("luigi", config.luigi ? "1" : "0");
   params.set("fast", config.fast ? "1" : "0");
   params.set("mute", config.mute ? "1" : "0");
   if (config.presetName) {
