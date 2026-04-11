@@ -2,6 +2,7 @@ const STORAGE_KEY = "mario-control-center-config";
 const PRESET_KEY = "mario-control-center-presets";
 const PLAYER_SKIN_PATH = "../../IMG_20260326_142958.jpg";
 const COIN_SKIN_PATH = "../../pixel_art.png";
+const GOOMBA_SKIN_PATH = "../../videoframe_14400.png";
 
 const defaults = {
   mode: "world",
@@ -406,14 +407,16 @@ function applyCustomPlayerSkin(game) {
 
   const playerImage = new game.Image();
   const coinImage = new game.Image();
+  const goombaImage = new game.Image();
   playerImage.src = PLAYER_SKIN_PATH;
   coinImage.src = COIN_SKIN_PATH;
+  goombaImage.src = GOOMBA_SKIN_PATH;
 
   const originalDrawThingOnCanvas = game.drawThingOnCanvas;
   if (typeof originalDrawThingOnCanvas !== "function") return;
 
   game.drawThingOnCanvas = function patchedDrawThingOnCanvas(context, me) {
-    if (!shouldDrawCustomThing(me, playerImage, coinImage)) {
+    if (!shouldDrawCustomThing(me, playerImage, coinImage, goombaImage)) {
       return originalDrawThingOnCanvas.call(this, context, me);
     }
 
@@ -421,7 +424,7 @@ function applyCustomPlayerSkin(game) {
     const topc = me.top;
     const width = me.unitwidth || (me.width * game.unitsize);
     const height = me.unitheight || (me.height * game.unitsize);
-    const scale = me.coin ? 1.7 : 1;
+    const scale = me.coin ? 1.7 : (isGoomba(me) ? 1.3 : 1);
     const drawWidth = width * scale;
     const drawHeight = height * scale;
     const drawLeft = me.coin ? leftc - ((drawWidth - width) / 2) : leftc;
@@ -431,10 +434,10 @@ function applyCustomPlayerSkin(game) {
       return;
     }
 
-    const activeImage = me.player ? playerImage : coinImage;
+    const activeImage = me.player ? playerImage : (me.coin ? coinImage : goombaImage);
 
     context.save();
-    if (me.player && me.className && me.className.indexOf("flipped") !== -1) {
+    if ((me.player || isGoomba(me)) && me.className && me.className.indexOf("flipped") !== -1) {
       context.translate(drawLeft + drawWidth, drawTop);
       context.scale(-1, 1);
       context.drawImage(activeImage, 0, 0, drawWidth, drawHeight);
@@ -447,14 +450,19 @@ function applyCustomPlayerSkin(game) {
   game.__customSkinPatchApplied = true;
 }
 
-function shouldDrawCustomThing(me, playerImage, coinImage) {
+function shouldDrawCustomThing(me, playerImage, coinImage, goombaImage) {
   return Boolean(
     me &&
     ((me.player && playerImage && playerImage.complete) ||
-      (me.coin && coinImage && coinImage.complete)) &&
+      (me.coin && coinImage && coinImage.complete) ||
+      (isGoomba(me) && goombaImage && goombaImage.complete)) &&
     me.alive !== false &&
     !me.hidden
   );
+}
+
+function isGoomba(me) {
+  return Boolean(me && me.className && me.className.indexOf("goomba") !== -1);
 }
 
 function attachEmbeddedFullscreenBridge(game) {
